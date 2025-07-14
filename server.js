@@ -49,6 +49,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-app.listen(PORT,()=>console.log("Server is running at PORT:",PORT))
-
 
