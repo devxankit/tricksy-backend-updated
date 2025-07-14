@@ -13,10 +13,14 @@ const driverSchema = new mongoose.Schema({
     },
     phone:{
         type:String,
-        required:[true, 'Email is required!'],
+        required:[true, 'Phone is required!'],
         unique:true,
     },
     address:{
+        type:String,
+        required:true
+    },
+    busNumber:{
         type:String,
         required:true
     },

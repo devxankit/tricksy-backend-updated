@@ -1,38 +1,62 @@
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import adminModel from '../model/adminModel.js';
 
-const createToken =(id) =>{
-    return jwt.sign({id},process.env.Jwt_Secret)
-}
-const registerAdmin = async (req, res) =>{
-   const role = 'ADMIN'
-   try {
-    const { phone, password } = req.body;
-    if(!phone || !password) {
-        return res.status(400).json({ success: false, message: "All fields are required" })
-    }
-    const exist = await adminModel.findeOne({phone});
-    if(exist){
-        return res.json({success:false, message:"User Already Exists"})
-    }
-    if(!validator.isMobilePhone(phone)){
-        return res.json({success:false, message:"Please Enter Valid phone"});
-    }
-    if(password.length < 8){
-        return res.json({success:false, message:"Please Enter Strong Password"});
-    } 
-    // Saving user
-    const salt = await bcrypt.genSalt(10);
-    const hashpassword = await bcrypt.hash(password,salt);
-    const newUser = new UserModel({
-        phone,
-        password:hashpassword,
-    })
-    const user = await newUser.save()
-    const token = createToken(user._id)
-    res.json({success:true,token})
+// Admin Login
+export const adminLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-   } catch (error) {
-    
-   }
-    
-}
+        // Find admin by email
+        const admin = await adminModel.findOne({ email });
+        if (!admin) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate JWT token with fallback secret
+        const jwtSecret = process.env.JWTSECRET || 'fallback-secret-key';
+        const token = jwt.sign(
+            { 
+                id: admin._id, 
+                email: admin.email, 
+                role: 'admin' 
+            },
+            jwtSecret,
+            { expiresIn: '24h' }
+        );
+
+        res.status(200).json({
+            message: 'Admin login successful',
+            token,
+            admin: {
+                _id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                phone: admin.phone
+            }
+        });
+
+    } catch (error) {
+        console.error('Admin login error:', error);
+        console.error('Error stack:', error.stack);
+        console.error('JWTSECRET value:', process.env.JWTSECRET);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Get all admins (protected route)
+export const getAllAdmins = async (req, res) => {
+    try {
+        const admins = await adminModel.find({}, { password: 0 });
+        res.status(200).json({ admins });
+    } catch (error) {
+        console.error('Get admins error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
