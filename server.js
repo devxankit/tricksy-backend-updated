@@ -20,7 +20,7 @@ const PORT = process.env.PORT;
 // Middleware 
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'], 
+  origin: ['https://tricksy-frontend.vercel.app/', 'http://localhost:5173', ], 
   credentials: true
 }));
 
