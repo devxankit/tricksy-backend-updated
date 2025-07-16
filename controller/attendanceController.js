@@ -220,37 +220,35 @@ export const updateAttendanceStatus = async (req, res) => {
 // Get attendance statistics
 export const getAttendanceStats = async (req, res) => {
   try {
-    const { userId, startDate, endDate } = req.query;
+    // Calculate for today only
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
-    let query = {};
-    
-    if (userId) {
-      query.userId = userId;
-    }
-
-    if (startDate && endDate) {
-      query.date = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-    }
-
-    const stats = await Attendance.aggregate([
-      { $match: query },
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
+    let query = {
+      date: {
+        $gte: today,
+        $lt: tomorrow
       }
-    ]);
+    };
 
+    // Optionally filter by userId if provided
+    if (req.query.userId) {
+      query.userId = req.query.userId;
+    }
+
+    // Get all attendance records for today
     const totalRecords = await Attendance.countDocuments(query);
+    const presentRecords = await Attendance.countDocuments({ ...query, status: 'present' });
+
+    // Calculate percentage
+    const percentage = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : 0;
 
     res.status(200).json({
       message: 'Attendance statistics retrieved successfully',
-      stats,
-      totalRecords
+      stats: { percentage },
+      totalRecords,
+      presentRecords
     });
   } catch (error) {
     console.error('Error fetching attendance stats:', error);

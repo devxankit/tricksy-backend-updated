@@ -15,11 +15,8 @@ const createAccommodation = async (req, res) => {
     }
 
     // Process uploaded files
-    console.log('Files received:', req.files);
     const images = req.files?.images ? req.files.images.map(file => `/uploads/${file.filename}`) : [];
     const videos = req.files?.videos ? req.files.videos.map(file => `/uploads/${file.filename}`) : [];
-    console.log('Processed images:', images);
-    console.log('Processed videos:', videos);
 
     const accommodation = new Accommodation({
       userId,
@@ -67,13 +64,6 @@ const getAllAccommodations = async (req, res) => {
     const accommodations = await Accommodation.find()
       .sort({ createdAt: -1 });
 
-    console.log('Retrieved accommodations:', accommodations.map(acc => ({
-      id: acc._id,
-      title: acc.title,
-      images: acc.images,
-      videos: acc.videos
-    })));
-
     res.status(200).json({
       message: 'All accommodations retrieved successfully',
       accommodations
@@ -91,27 +81,16 @@ const updateAccommodation = async (req, res) => {
     const { status, adminResponse } = req.body;
     const adminId = req.user.id; // From auth middleware
 
-    console.log('🔄 Admin update request:', {
-      accommodationId,
-      status,
-      adminResponse,
-      adminId
-    });
-
     // Get admin details
     const admin = await Admin.findById(adminId);
     if (!admin) {
-      console.log('❌ Admin not found:', adminId);
       return res.status(404).json({ message: 'Admin not found' });
     }
 
     const accommodation = await Accommodation.findById(accommodationId);
     if (!accommodation) {
-      console.log('❌ Accommodation not found:', accommodationId);
       return res.status(404).json({ message: 'Accommodation request not found' });
     }
-
-    console.log('📝 Current accommodation status:', accommodation.status);
 
     // Update accommodation
     accommodation.status = status || accommodation.status;
@@ -120,8 +99,6 @@ const updateAccommodation = async (req, res) => {
     accommodation.adminName = admin.name;
 
     await accommodation.save();
-
-    console.log('✅ Accommodation updated successfully. New status:', accommodation.status);
 
     res.status(200).json({
       message: 'Accommodation updated successfully',

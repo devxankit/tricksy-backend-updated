@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import adminModel from '../model/adminModel.js';
+import userModel from '../model/userModel.js';
+import driverModel from '../model/driverModel.js';
+import Attendance from '../model/attendanceModel.js';
 
 // Admin Login
 export const adminLogin = async (req, res) => {
@@ -20,7 +23,7 @@ export const adminLogin = async (req, res) => {
         }
 
         // Generate JWT token with fallback secret
-        const jwtSecret = process.env.JWTSECRET || 'fallback-secret-key';
+        const jwtSecret = process.env.JWTSECRET;
         const token = jwt.sign(
             { 
                 id: admin._id, 
@@ -58,5 +61,39 @@ export const getAllAdmins = async (req, res) => {
     } catch (error) {
         console.error('Get admins error:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// Get total users
+export const getTotalUsers = async (req, res) => {
+    try {
+        const count = await userModel.countDocuments();
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching total users' });
+    }
+};
+
+// Get total drivers
+export const getTotalDrivers = async (req, res) => {
+    try {
+        const count = await driverModel.countDocuments();
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching total drivers' });
+    }
+};
+
+// Get today's attendance
+export const getTodaysAttendance = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        const count = await Attendance.countDocuments({ date: { $gte: today, $lt: tomorrow } });
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching today\'s attendance' });
     }
 };

@@ -94,7 +94,6 @@ export const assignDriverToUsers = async (req, res) => {
     });
 
     await newAssignment.save();
-    console.log('Assignment saved successfully:', newAssignment._id);
 
     res.status(201).json({
       message: `Successfully assigned ${users.length} users to driver ${driver.name}`,

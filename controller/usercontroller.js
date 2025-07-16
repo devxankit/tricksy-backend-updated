@@ -68,7 +68,7 @@ export const userLogin = async (req, res) => {
         }
 
         // Generate JWT token with fallback secret
-        const jwtSecret = process.env.JWTSECRET || 'fallback-secret-key';
+        const jwtSecret = process.env.JWTSECRET ;
         const token = jwt.sign(
             { 
                 id: user._id, 

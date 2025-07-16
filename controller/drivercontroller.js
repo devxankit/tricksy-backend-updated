@@ -70,7 +70,7 @@ export const driverLogin = async (req, res) => {
         }
 
         // Generate JWT token with fallback secret
-        const jwtSecret = process.env.JWTSECRET || 'fallback-secret-key';
+        const jwtSecret = process.env.JWTSECRET;
         const token = jwt.sign(
             { 
                 id: driver._id, 
