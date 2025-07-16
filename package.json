@@ -22,8 +22,7 @@
     "start": "node server.js",
     "server": "nodemon server.js",
     "create-admin": "node scripts/createDefaultAdmin.js",
-    "create-test-data": "node scripts/createTestData.js",
-    "postinstall": "npm install --production"
+    "create-test-data": "node scripts/createTestData.js"
   },
   "author": "",
   "license": "ISC",
